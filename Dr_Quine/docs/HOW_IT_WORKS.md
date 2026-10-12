@@ -106,7 +106,7 @@ The last line of the file is just `FT`, which expands into the whole program. No
 
 Grace returns 1 if `fopen` or `fclose` fails, so it won't crash on a read-only directory.
 
-Because of the one-comment rule, `Grace.s` is the only ASM file without a comment on every instruction. [GRACE_ASM_ANNOTATED.md](GRACE_ASM_ANNOTATED.md) has the same program with every line explained.
+Because of the one-comment rule, `Grace.s` is the only ASM file that isn't commented line by line. [GRACE_ASM_ANNOTATED.md](GRACE_ASM_ANNOTATED.md) has a commented copy.
 
 ## Sully
 
