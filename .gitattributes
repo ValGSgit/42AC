@@ -1,0 +1,3 @@
+# Keep everything LF, even on Windows checkouts.
+# The quines compare byte-for-byte against their own source, so CRLF breaks them.
+* text=auto eol=lf
