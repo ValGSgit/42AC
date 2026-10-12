@@ -106,6 +106,8 @@ The last line of the file is just `FT`, which expands into the whole program. No
 
 Grace returns 1 if `fopen` or `fclose` fails, so it won't crash on a read-only directory.
 
+Because of the one-comment rule, `Grace.s` is the only ASM file without a comment on every instruction. [GRACE_ASM_ANNOTATED.md](GRACE_ASM_ANNOTATED.md) has the same program with every line explained.
+
 ## Sully
 
 Sully is the fun one. Line 1 holds a counter (`int i = 5;` / `i equ 5`). When you run it:

@@ -4,6 +4,8 @@ This is my take on the Dr_Quine project: three self-replicating programs (Collee
 
 None of these programs open their own source file. Each one carries its source inside itself as a string and rebuilds the file from that string. If you want to know how that works, read [docs/HOW_IT_WORKS.md](docs/HOW_IT_WORKS.md). This file only covers building, running and testing.
 
+`Colleen.s` and `Sully.s` have a comment on every instruction. `Grace.s` can't, because the subject allows it exactly one comment, so its line-by-line explanation is in [docs/GRACE_ASM_ANNOTATED.md](docs/GRACE_ASM_ANNOTATED.md).
+
 ## Layout
 
 ```
@@ -19,7 +21,8 @@ Dr_Quine/
 │   ├── Sully.s
 │   └── Makefile
 └── docs/
-    └── HOW_IT_WORKS.md
+    ├── HOW_IT_WORKS.md
+    └── GRACE_ASM_ANNOTATED.md
 ```
 
 ## What you need
