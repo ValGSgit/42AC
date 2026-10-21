@@ -2,6 +2,8 @@
 
 ## The Makefile
 
+The [Makefile](../Makefile) in this folder is ready to use (run `make help`), and it's commented. This section explains the ideas behind it, so you can defend it or write your own.
+
 Required rules: `$(NAME)`, `all`, `clean`, `fclean`, `re`, and `bonus`. `NAME = libasm.a`. It must not relink when nothing changed: running `make` twice should print "Nothing to be done" (or nothing) the second time.
 
 The pieces you need:

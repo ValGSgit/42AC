@@ -1,0 +1,6 @@
+obj/
+try_bin/
+libasm.a
+.bonus
+run_tests
+run_tests_bonus

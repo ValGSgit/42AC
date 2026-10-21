@@ -22,7 +22,7 @@ Read the docs in order. Each one ends with a short checklist or exercises, so yo
 ## Suggested order of work
 
 1. Read docs 1–3 once, without coding.
-2. Set up the Makefile and an empty `main.c` first (doc 7), so you can build and test from minute one.
+2. Create `libasm.h` and a `main.c` first, so `make test` works from minute one. For the doc 1 exercises, use `make try S=scratch/add.s` (see below).
 3. `ft_strlen` → `ft_strcpy` → `ft_strcmp`. No calls, no syscalls, just loops. Get comfortable with gdb here.
 4. `ft_write` → `ft_read`. First syscalls, first `errno`.
 5. `ft_strdup` → `ft_calloc`. First calls into libc, first time stack alignment and callee-saved registers really matter.
@@ -35,7 +35,7 @@ This is a suggestion; only the names `libasm.a` and `*_bonus.s` are imposed by t
 
 ```
 libasm/
-├── Makefile
+├── Makefile              <- provided: auto-detects ft_*.s, has test/debug helpers (make help)
 ├── libasm.h              <- prototypes + t_list, for main.c
 ├── main.c                <- the test program the subject asks you to submit
 ├── ft_strlen.s
@@ -75,6 +75,22 @@ void         ft_list_remove_if(t_list **begin_list, void *data_ref,
                                int (*cmp)(), void (*free_fct)(void *));
 void        *ft_simd_memchr(const void *s, int c, size_t n);
 ```
+
+## Using the Makefile
+
+| Command | What it does |
+|---------|--------------|
+| `make` / `make bonus` | Build `libasm.a`. Every `ft_*.s` goes in; `make bonus` also adds every `ft_*_bonus.s`. |
+| `make clean` / `fclean` / `re` | The usual. |
+| `make test` | Compile `main.c` against the library and run it. `ARGS="..."` passes arguments. |
+| `make test_bonus` | Same, compiled with `-DBONUS` against the bonus library. Put bonus tests in `#ifdef BONUS`. |
+| `make valgrind` / `gdb` / `strace` | Run the tests under that tool. Add `B=1` for the bonus build. |
+| `make re DEBUG=1` | Rebuild with debug info, for stepping through your asm in gdb. |
+| `make syms` | `nm` the library: every `ft_*` should show as `T`. |
+| `make relink-check` | Confirms `make` and `make bonus` don't rebuild anything needlessly (evaluators check this). |
+| `make try S=scratch/add.s` | Assemble one file outside the library and run it with `scratch/add.c` as its `main`. `C=other.c` picks a different driver, `RUN="gdb -q"` runs it under a tool. |
+
+Because the Makefile picks up sources with `wildcard`, you never have to edit it when you add a function. Some evaluators prefer explicit file lists. If yours does, replace the two `wildcard` lines with lists.
 
 ## What you need
 
