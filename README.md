@@ -9,6 +9,7 @@ Each project has its own folder with its own README. The README explains how to 
 | Project | Branch | Languages | What it's about | Status |
 |---------|--------|-----------|-----------------|--------|
 | [Dr_Quine](Dr_Quine/) | Security | C, x86-64 ASM | Self-replicating programs (quines). The intro to the virus/malware projects. | Done |
+| [libasm](libasm/) | Kernel | x86-64 ASM (NASM) | Rewriting libc functions in assembly: calling convention, syscalls, errno, SIMD. | In progress (study guide written, code to do) |
 
 I'll add more rows here as I finish projects.
 
@@ -18,18 +19,21 @@ I'll add more rows here as I finish projects.
 42AC/
 ├── README.md          <- you are here
 ├── .gitattributes     <- forces LF line endings (see below)
-└── Dr_Quine/
+├── Dr_Quine/
+│   ├── README.md
+│   ├── docs/
+│   ├── C/
+│   └── ASM/
+└── libasm/
     ├── README.md
-    ├── docs/
-    ├── C/
-    └── ASM/
+    └── docs/
 ```
 
 Every project folder stands on its own. You can `cd` into one and follow its README without reading anything else here.
 
 ## Conventions
 
-- **One folder per project**, named after the subject (`Dr_Quine`, ...).
+- **One folder per project**, named after the subject (`Dr_Quine`, `libasm`, ...).
 - **Every project builds with its own Makefile(s)** and the usual rules (`all`, `clean`, `fclean`, `re`).
 - **Targets Linux x86-64** unless the subject says otherwise. On Windows I use WSL.
 - **LF line endings everywhere.** `.gitattributes` enforces this. Some projects (the quines especially) compare files byte-for-byte, and a Windows checkout with CRLF breaks them silently. If you cloned the repo before `.gitattributes` existed, run `git add --renormalize .` or just re-clone.
