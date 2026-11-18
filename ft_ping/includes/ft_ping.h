@@ -12,15 +12,13 @@
 # define PROGNAME		"ft_ping"
 # define VERSION		"1.0"
 
-/* Same defaults and limits as inetutils-2.0 (ping.h / ping_common.h) */
-# define DEFAULT_DATALEN	56
-# define MAX_IPLEN		60
-# define MAX_ICMPLEN		76
-# define MAX_DATALEN		(65535 - MAX_IPLEN - MAX_ICMPLEN)
-# define DEFAULT_INTERVAL	1.0
-# define FLOOD_INTERVAL		0.01
-# define DEFAULT_LINGER		10
-# define MAX_PATTERN		16
+/*
+ * Same defaults as inetutils-2.0 (ping.h / ping_common.h). The mandatory
+ * part has no option to change them: 56 data bytes, one packet a second.
+ * 56 is enough room for the timestamp, so every reply gets a "time=".
+ */
+# define DATALEN		56
+# define INTERVAL		1.0
 # define RECV_BUFSIZE		(65535 + 1)
 
 /* Exit codes, as in inetutils (EX_USAGE from sysexits.h) */
@@ -28,23 +26,10 @@
 
 /* Option flags */
 # define OPT_VERBOSE	0x01
-# define OPT_QUIET	0x02
-# define OPT_FLOOD	0x04
-# define OPT_INTERVAL	0x08
 
 typedef struct s_opts
 {
 	int		flags;
-	size_t		count;		/* -c, 0 = forever */
-	double		interval;	/* -i, seconds */
-	long		timeout;	/* -w, seconds, 0 = none */
-	long		linger;		/* -W, seconds */
-	size_t		datalen;	/* -s */
-	int		ttl;		/* --ttl, 0 = system default */
-	int		tos;		/* -T, -1 = untouched */
-	size_t		preload;	/* -l */
-	unsigned char	pattern[MAX_PATTERN];
-	size_t		pattern_len;
 }	t_opts;
 
 typedef struct s_stats
@@ -69,7 +54,6 @@ typedef struct s_ping
 	unsigned char		*packet;	/* outgoing ICMP packet */
 	size_t			packet_len;
 	unsigned char		dup_table[65536 / 8];
-	struct timeval		start;
 	t_stats			stats;
 }	t_ping;
 
@@ -88,10 +72,10 @@ int		build_packet(t_ping *ping);
 int		send_echo(t_ping *ping);
 
 /* receive.c */
-int		receive_packet(t_ping *ping);
+void		receive_packet(t_ping *ping);
 
 /* icmp_print.c */
-int		print_icmp_error(t_ping *ping, struct ip *ip, struct icmp *icmp,
+void		print_icmp_error(t_ping *ping, struct ip *ip, struct icmp *icmp,
 			size_t len, struct in_addr from);
 
 /* stats.c */
@@ -100,7 +84,6 @@ void		print_stats(t_ping *ping);
 
 /* utils.c */
 double		tv_diff_ms(const struct timeval *a, const struct timeval *b);
-int		timing_enabled(const t_ping *ping);
 void		error_msg(const char *fmt, ...);
 void		usage_error(const char *fmt, ...);
 

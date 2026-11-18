@@ -1,12 +1,12 @@
 #!/bin/bash
 # Tiny 2-hop network made of network namespaces, to get real ICMP errors
-# (TTL exceeded, net unreachable) without needing a real router.
+# (net unreachable) without needing a real router. The TTL exceeded test
+# needs --ttl, which is bonus: see ft_ping_bonus/tests/.
 #
 #   [ns h] 10.0.1.2 ---- 10.0.1.1 [ns r1, router] 10.0.2.1 ---- 10.0.2.2 [ns t]
 #
 #   sudo ./tests/netns_lab.sh up
-#   sudo ip netns exec h ./ft_ping -v --ttl=1 10.0.2.2   -> Time to live exceeded
-#   sudo ip netns exec h ./ft_ping 10.0.9.9              -> Destination Net Unreachable
+#   sudo ip netns exec h ./ft_ping -v 10.0.9.9   -> Destination Net Unreachable
 #   sudo ./tests/netns_lab.sh down
 #
 # Needs iproute2 and root.
@@ -40,7 +40,7 @@ up() {
 	# Linux rate-limits ICMP errors to ~1/s by default, which makes the
 	# output random when comparing two pings. Turn that off on the router.
 	ip netns exec r1 sysctl -qw net.ipv4.icmp_ratelimit=0
-	echo "lab up: try  sudo ip netns exec h ./ft_ping -v --ttl=1 10.0.2.2"
+	echo "lab up: try  sudo ip netns exec h ./ft_ping -v 10.0.9.9"
 }
 
 down() {

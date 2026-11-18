@@ -31,15 +31,14 @@ uint16_t	checksum(const void *data, size_t len)
 /*
  * Packet layout:
  *   [ icmp header (8) ][ struct timeval (16) ][ filler ... ]
- * The timeval is only there if datalen is big enough for it, otherwise we
- * can't measure the RTT (same as inetutils: no "time=" with -s < 16).
+ * The filler is 0x00, 0x01, 0x02, ... like inetutils.
  */
 int	build_packet(t_ping *ping)
 {
 	unsigned char	*data;
 	size_t		i;
 
-	ping->packet_len = ICMP_MINLEN + ping->opts.datalen;
+	ping->packet_len = ICMP_MINLEN + DATALEN;
 	ping->packet = calloc(1, ping->packet_len);
 	if (!ping->packet)
 	{
@@ -48,12 +47,9 @@ int	build_packet(t_ping *ping)
 	}
 	data = ping->packet + ICMP_MINLEN;
 	i = 0;
-	while (i < ping->opts.datalen)
+	while (i < DATALEN)
 	{
-		if (ping->opts.pattern_len)
-			data[i] = ping->opts.pattern[i % ping->opts.pattern_len];
-		else
-			data[i] = (unsigned char)i;
+		data[i] = (unsigned char)i;
 		i++;
 	}
 	return (0);
@@ -78,16 +74,13 @@ int	send_echo(t_ping *ping)
 	icmp->icmp_id = htons(ping->id);
 	icmp->icmp_seq = htons(seq);
 	icmp->icmp_cksum = 0;
-	if (timing_enabled(ping))
-	{
-		gettimeofday(&now, NULL);
-		memcpy(ping->packet + ICMP_MINLEN, &now, sizeof(now));
-	}
+	gettimeofday(&now, NULL);
+	memcpy(ping->packet + ICMP_MINLEN, &now, sizeof(now));
 	icmp->icmp_cksum = checksum(ping->packet, ping->packet_len);
 	mark_unseen(ping, seq);
 	n = sendto(ping->sock, ping->packet, ping->packet_len, 0,
 			(struct sockaddr *)&ping->dest, sizeof(ping->dest));
-	/* Counted even if it failed, otherwise -c never ends on a dead link */
+	/* Counted even if it failed, so a dead link shows as packet loss */
 	ping->stats.sent++;
 	if (n < 0)
 	{

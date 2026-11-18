@@ -9,12 +9,6 @@ double	tv_diff_ms(const struct timeval *a, const struct timeval *b)
 		+ (double)(a->tv_usec - b->tv_usec) / 1000.0);
 }
 
-/* We can only time packets that are big enough to carry a timestamp. */
-int	timing_enabled(const t_ping *ping)
-{
-	return (ping->opts.datalen >= sizeof(struct timeval));
-}
-
 /* "ft_ping: <message>" on stderr */
 void	error_msg(const char *fmt, ...)
 {

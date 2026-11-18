@@ -36,38 +36,12 @@ static struct timeval	seconds_to_tv(double s)
 	return (tv);
 }
 
-static int	timed_out(t_ping *ping)
-{
-	struct timeval	now;
-
-	if (!ping->opts.timeout)
-		return (0);
-	gettimeofday(&now, NULL);
-	return (tv_diff_ms(&now, &ping->start) >= (double)ping->opts.timeout * 1000.0);
-}
-
-/*
- * In flood mode every request sent from the loop prints a '.', and every
- * reply erases one with '\b'. Like inetutils, the first packet and the
- * preloaded ones (sent before the loop) don't get a dot.
- */
-static void	send_flood_aware(t_ping *ping)
-{
-	send_echo(ping);
-	if ((ping->opts.flags & OPT_FLOOD) && !(ping->opts.flags & OPT_QUIET))
-	{
-		putchar('.');
-		fflush(stdout);
-	}
-}
-
 /*
  * The main loop, same idea as ping_run() in inetutils: select() on the
  * socket with a timeout equal to the time left until the next send.
  *  - socket readable  -> read a packet
  *  - timeout          -> send the next echo request
- * Once -c packets have been sent we wait one more "linger" period (-W, 10s
- * by default) for late replies, unless everything already came back.
+ * It runs until Ctrl-C.
  */
 static void	ping_loop(t_ping *ping)
 {
@@ -75,19 +49,13 @@ static void	ping_loop(t_ping *ping)
 	struct timeval	now;
 	struct timeval	tv;
 	fd_set		fds;
-	double		wait;
-	size_t		nresp;
-	int		finishing;
 	int		n;
 
-	nresp = 0;
-	finishing = 0;
-	wait = ping->opts.interval;
 	gettimeofday(&last, NULL);
-	while (!g_stop && !timed_out(ping))
+	while (!g_stop)
 	{
 		gettimeofday(&now, NULL);
-		tv = seconds_to_tv(wait - tv_diff_ms(&now, &last) / 1000.0);
+		tv = seconds_to_tv(INTERVAL - tv_diff_ms(&now, &last) / 1000.0);
 		FD_ZERO(&fds);
 		FD_SET(ping->sock, &fds);
 		n = select(ping->sock + 1, &fds, NULL, NULL, &tv);
@@ -100,21 +68,10 @@ static void	ping_loop(t_ping *ping)
 		}
 		if (n > 0)
 		{
-			if (receive_packet(ping) == 0)
-				nresp++;
-			if (ping->opts.count && nresp >= ping->opts.count)
-				break ;
+			receive_packet(ping);
 			continue ;
 		}
-		if (!ping->opts.count || ping->stats.sent < ping->opts.count)
-			send_flood_aware(ping);
-		else if (finishing)
-			break ;
-		else
-		{
-			finishing = 1;
-			wait = (double)ping->opts.linger;
-		}
+		send_echo(ping);
 		gettimeofday(&last, NULL);
 	}
 }
@@ -127,8 +84,6 @@ static void	cleanup(t_ping *ping)
 
 static int	ping_host(t_ping *ping, const char *host)
 {
-	size_t	i;
-
 	memset(&ping->stats, 0, sizeof(ping->stats));
 	memset(ping->dup_table, 0, sizeof(ping->dup_table));
 	if (resolve_host(ping, host) < 0)
@@ -137,19 +92,11 @@ static int	ping_host(t_ping *ping, const char *host)
 		cleanup(ping);
 		exit(EXIT_FAILURE);
 	}
-	printf("PING %s (%s): %zu data bytes", ping->hostname, ping->ipstr,
-		ping->opts.datalen);
+	printf("PING %s (%s): %d data bytes", ping->hostname, ping->ipstr,
+		DATALEN);
 	if (ping->opts.flags & OPT_VERBOSE)
 		printf(", id 0x%04x = %u", ping->id, ping->id);
 	printf("\n");
-	gettimeofday(&ping->start, NULL);
-	/*
-	 * Like inetutils, -l doesn't care about -c and the first packet always
-	 * goes out: "-c 3 -l 3" sends 4. Weird, but it's the reference.
-	 */
-	i = 0;
-	while (i++ < ping->opts.preload)
-		send_echo(ping);
 	send_echo(ping);
 	ping_loop(ping);
 	print_stats(ping);

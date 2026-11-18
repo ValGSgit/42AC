@@ -2,8 +2,13 @@
 # Runs the system ping (inetutils) and ./ft_ping with the same arguments and
 # diffs the output. Only a test helper: ft_ping itself never calls ping.
 #
-#   sudo ./tests/compare.sh -c 3 localhost
-#   sudo NS=h ./tests/compare.sh -v -c 2 --ttl=1 10.0.2.2   (inside netns "h")
+#   sudo ./tests/compare.sh localhost
+#   sudo ./tests/compare.sh -v localhost
+#   sudo NS=h ./tests/compare.sh -v 10.0.9.9   (inside netns "h")
+#
+# The mandatory ft_ping has no -c, it pings until Ctrl-C. So both pings get
+# a SIGINT (= Ctrl-C) after SECS seconds, 3.5 by default: 4 packets each,
+# then the summary. The half second keeps the stop away from a send.
 #
 # Things that can't match are masked before diffing: times, the echo id
 # (it's the pid), and the IP id/checksum the kernel picks for each packet.
@@ -11,11 +16,14 @@
 
 cd "$(dirname "$0")/.." || exit 1
 
+SECS=${SECS:-3.5}
+
+# --preserve-status: report the ping's own exit code, not timeout's 124
 run() {
 	if [ -n "$NS" ]; then
-		timeout 20 ip netns exec "$NS" "$@" 2>&1
+		timeout -s INT --preserve-status "$SECS" ip netns exec "$NS" "$@" 2>&1
 	else
-		timeout 20 "$@" 2>&1
+		timeout -s INT --preserve-status "$SECS" "$@" 2>&1
 	fi
 	echo "exit=$?"
 }
