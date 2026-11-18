@@ -27,7 +27,10 @@ I'll add more rows here as I finish projects.
 │   └── ASM/
 ├── libasm/
 │   ├── README.md
-│   └── docs/
+│   ├── Makefile           <- mandatory part; `make bonus` builds libasm_bonus/
+│   ├── docs/
+│   └── libasm_bonus/      <- the full library with the bonus, builds on its own
+│       └── Makefile
 └── ft_ping/
     ├── README.md
     ├── Makefile           <- mandatory part; `make bonus` builds ft_ping_bonus/

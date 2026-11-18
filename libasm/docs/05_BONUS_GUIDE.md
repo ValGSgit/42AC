@@ -1,6 +1,6 @@
 # 05 — Bonus: ft_atoi_base and the list functions
 
-Reminder: the bonus is only graded if the mandatory part is **perfect**. Bonus code goes in `*_bonus.s` files, built by the `bonus` Makefile rule.
+Reminder: the bonus is only graded if the mandatory part is **perfect**. Bonus code goes in `*_bonus.s` files in `libasm_bonus/`, next to `_bonus` copies of your mandatory functions, and `make bonus` builds them into `libasm_bonus/libasm.a`. See the README for the layout.
 
 `ft_simd_memchr` gets its own doc: [06_SIMD_MEMCHR.md](06_SIMD_MEMCHR.md).
 

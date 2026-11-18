@@ -27,17 +27,27 @@ Read the docs in order. Each one ends with a short checklist or exercises, so yo
 4. `ft_write` → `ft_read`. First syscalls, first `errno`.
 5. `ft_strdup` → `ft_calloc`. First calls into libc, first time stack alignment and callee-saved registers really matter.
 6. Polish the mandatory part until it's perfect. The bonus isn't graded otherwise.
-7. Bonus: `ft_list_size` → `ft_list_push_front` → `ft_list_sort` → `ft_list_remove_if` → `ft_atoi_base` → `ft_simd_memchr`.
+7. Copy the mandatory part into `libasm_bonus/` with the `_bonus` names (`ft_strlen.s` → `ft_strlen_bonus.s`, `libasm.h` → `libasm_bonus.h`, `main.c` → `main_bonus.c`).
+8. Bonus, in `libasm_bonus/`: `ft_list_size` → `ft_list_push_front` → `ft_list_sort` → `ft_list_remove_if` → `ft_atoi_base` → `ft_simd_memchr`.
+
+## Mandatory and bonus
+
+The two parts live in separate folders, and each one is a complete library on its own:
+
+- **This folder is the mandatory part**: the seven functions, `libasm.h` and `main.c`. No bonus code in here, and no `#ifdef BONUS` in `main.c`.
+- **`libasm_bonus/` is the full library with the bonus**: a copy of the mandatory functions plus the bonus ones, its own header, its own test `main` and its own Makefile. Nothing in there includes or assembles anything from the mandatory folder. Every file has a `_bonus` suffix, so the duplicated mandatory functions are `ft_strlen_bonus.s` and so on. The symbols inside stay `ft_strlen`, ... of course.
+
+`make` here builds `libasm.a` with the mandatory functions. `make bonus` builds `libasm_bonus/libasm.a` with the mandatory and the bonus functions. The two never overwrite each other, so `make bonus` followed by `make` doesn't rebuild or drop anything.
 
 ## The layout you'll end up with
 
-This is a suggestion; only the names `libasm.a` and `*_bonus.s` are imposed by the subject.
+This is a suggestion; only the names `libasm.a` and `*_bonus.s` are imposed by the subject. Right now the folders only have the Makefiles and the docs. The `.s` files, headers and mains are yours to write.
 
 ```
 libasm/
-├── Makefile              <- provided: auto-detects ft_*.s, has test/debug helpers (make help)
-├── libasm.h              <- prototypes + t_list, for main.c
-├── main.c                <- the test program the subject asks you to submit
+├── Makefile                      <- provided: auto-detects ft_*.s, has test/debug helpers (make help)
+├── libasm.h                      <- prototypes, for main.c
+├── main.c                        <- the test program the subject asks you to submit
 ├── ft_strlen.s
 ├── ft_strcpy.s
 ├── ft_strcmp.s
@@ -45,16 +55,23 @@ libasm/
 ├── ft_read.s
 ├── ft_strdup.s
 ├── ft_calloc.s
-├── ft_atoi_base_bonus.s
-├── ft_list_push_front_bonus.s
-├── ft_list_size_bonus.s
-├── ft_list_sort_bonus.s
-├── ft_list_remove_if_bonus.s
-├── ft_simd_memchr_bonus.s
+├── libasm_bonus/
+│   ├── Makefile                  <- provided: auto-detects ft_*_bonus.s, same helpers
+│   ├── libasm_bonus.h            <- all the prototypes + t_list, for main_bonus.c
+│   ├── main_bonus.c              <- tests for everything, mandatory and bonus
+│   ├── ft_strlen_bonus.s         <- the seven mandatory functions again...
+│   ├── ...
+│   ├── ft_calloc_bonus.s
+│   ├── ft_atoi_base_bonus.s      <- ...and the bonus ones
+│   ├── ft_list_push_front_bonus.s
+│   ├── ft_list_size_bonus.s
+│   ├── ft_list_sort_bonus.s
+│   ├── ft_list_remove_if_bonus.s
+│   └── ft_simd_memchr_bonus.s
 └── docs/
 ```
 
-Prototypes for `libasm.h`, straight from the man pages and the subject:
+Prototypes, straight from the man pages and the subject. `libasm.h` gets the first seven, `libasm_bonus.h` gets all of them:
 
 ```c
 size_t       ft_strlen(const char *s);
@@ -78,19 +95,24 @@ void        *ft_simd_memchr(const void *s, int c, size_t n);
 
 ## Using the Makefile
 
+From this folder:
+
 | Command | What it does |
 |---------|--------------|
-| `make` / `make bonus` | Build `libasm.a`. Every `ft_*.s` goes in; `make bonus` also adds every `ft_*_bonus.s`. |
-| `make clean` / `fclean` / `re` | The usual. |
+| `make` | Build `libasm.a` from every `ft_*.s` in this folder (the mandatory part). |
+| `make bonus` | Run the Makefile in `libasm_bonus/`, which builds `libasm_bonus/libasm.a` from every `ft_*_bonus.s` there (mandatory + bonus). |
+| `make clean` / `fclean` | The usual, in both folders. |
+| `make re` | `fclean` + `make` (mandatory). |
 | `make test` | Compile `main.c` against the library and run it. `ARGS="..."` passes arguments. |
-| `make test_bonus` | Same, compiled with `-DBONUS` against the bonus library. Put bonus tests in `#ifdef BONUS`. |
-| `make valgrind` / `gdb` / `strace` | Run the tests under that tool. Add `B=1` for the bonus build. |
+| `make valgrind` / `gdb` / `strace` | Run the tests under that tool. |
 | `make re DEBUG=1` | Rebuild with debug info, for stepping through your asm in gdb. |
 | `make syms` | `nm` the library: every `ft_*` should show as `T`. |
 | `make relink-check` | Confirms `make` and `make bonus` don't rebuild anything needlessly (evaluators check this). |
 | `make try S=scratch/add.s` | Assemble one file outside the library and run it with `scratch/add.c` as its `main`. `C=other.c` picks a different driver, `RUN="gdb -q"` runs it under a tool. |
 
-Because the Makefile picks up sources with `wildcard`, you never have to edit it when you add a function. Some evaluators prefer explicit file lists. If yours does, replace the two `wildcard` lines with lists.
+`libasm_bonus/` has its own Makefile with the same rules except `bonus` and `try`, so you can `cd libasm_bonus` and use `make`, `make re`, `make test` (it builds and runs `main_bonus.c`), `make valgrind`, `make syms`, `make relink-check`, ... directly.
+
+Because the Makefiles pick up sources with `wildcard`, you never have to edit them when you add a function. Some evaluators prefer explicit file lists. If yours does, replace the `wildcard` line in each Makefile with a list.
 
 ## What you need
 
@@ -110,7 +132,7 @@ These are all in the subject, but scattered. Every one of them can cost you the 
 - **Set `errno`** in `ft_write`/`ft_read` on failure, via `__errno_location` (Linux) or `___error` (macOS).
 - **`ft_calloc` must detect `nmemb * size` overflow itself.** Don't just pass the product to `malloc`.
 - **The Makefile must not relink** when nothing changed, and needs `$(NAME) all clean fclean re` plus `bonus`.
-- **Bonus files end in `_bonus.s`.** Bonus is only graded if the mandatory part is perfect.
+- **Bonus files end in `_bonus.s`.** Bonus is only graded if the mandatory part is perfect. Here they all go in `libasm_bonus/`.
 - **Submit a `main`** that tests the functions against the real ones.
 - **No crashes** except on undefined behavior (e.g. `ft_strlen(NULL)` may segfault, just like the real one).
 - **AI transparency:** the subject asks you to say what was AI-generated. These docs were written with an AI assistant; your `.s` files should be yours, and you should be able to explain every line during the defense.
