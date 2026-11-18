@@ -10,6 +10,7 @@ Each project has its own folder with its own README. The README explains how to 
 |---------|--------|-----------|-----------------|--------|
 | [Dr_Quine](Dr_Quine/) | Security | C, x86-64 ASM | Self-replicating programs (quines). The intro to the virus/malware projects. | Done |
 | [libasm](libasm/) | Kernel | x86-64 ASM (NASM) | Rewriting libc functions in assembly: calling convention, syscalls, errno, SIMD. | In progress (study guide written, code to do) |
+| [ft_ping](ft_ping/) | Network | C | Recoding `ping` (inetutils-2.0 output) with raw sockets and hand-built ICMP packets. | Done (mandatory + bonus flags) |
 
 I'll add more rows here as I finish projects.
 
@@ -24,9 +25,15 @@ I'll add more rows here as I finish projects.
 │   ├── docs/
 │   ├── C/
 │   └── ASM/
-└── libasm/
+├── libasm/
+│   ├── README.md
+│   └── docs/
+└── ft_ping/
     ├── README.md
-    └── docs/
+    ├── Makefile
+    ├── includes/
+    ├── srcs/
+    └── tests/
 ```
 
 Every project folder stands on its own. You can `cd` into one and follow its README without reading anything else here.
