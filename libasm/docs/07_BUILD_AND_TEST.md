@@ -2,7 +2,7 @@
 
 ## The Makefile
 
-The [Makefile](../Makefile) in this folder is ready to use (run `make help`), and it's commented. This section explains the ideas behind it, so you can defend it or write your own.
+The [Makefile](../Makefile) in this folder and the one in [libasm_bonus/](../libasm_bonus/Makefile) are ready to use (run `make help`), and they're commented. This section explains the ideas behind it, so you can defend it or write your own.
 
 Required rules: `$(NAME)`, `all`, `clean`, `fclean`, `re`, and `bonus`. `NAME = libasm.a`. It must not relink when nothing changed: running `make` twice should print "Nothing to be done" (or nothing) the second time.
 
@@ -36,8 +36,18 @@ bonus: $(OBJ) $(BONUS_OBJ)
 
 - Make `bonus` depend on a real file, e.g. a stamp file `.bonus` that's created by the rule and whose prerequisites are the objects, so it's only rebuilt when an object changed. `fclean` removes the stamp.
 - Or make `$(NAME)` itself depend on the bonus objects when building in bonus mode (a variable switch).
+- Or keep the bonus in its own folder with its own Makefile and its own `libasm.a`, and have `bonus` just run that Makefile.
 
-Also think about the sequence `make bonus` then `make`: should `make` drop the bonus functions again? Either answer is defensible if you can explain it, but nothing should relink needlessly.
+This repo uses the last one: the bonus is in `libasm_bonus/`, and `make bonus` is
+
+```make
+bonus:
+	@$(MAKE) --no-print-directory -C libasm_bonus
+```
+
+The rule itself always runs, but all it does is start the other make, and that one only rebuilds what changed. The second `make bonus` prints "Nothing to be done". The two libraries are different files, so the sequence `make bonus` then `make` can't drop or rebuild anything either.
+
+One catch: because `bonus` always runs its recipe, `make -q bonus` always says "out of date", even when nothing would be rebuilt. That's why `make relink-check` asks the bonus Makefile directly (`make -C libasm_bonus -q all`).
 
 ### Building the test program
 

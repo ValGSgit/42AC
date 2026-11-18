@@ -57,7 +57,7 @@ void	print_stats(t_ping *ping)
 				(int)(((st->sent - st->received) * 100) / st->sent));
 	}
 	printf("\n");
-	if (st->received && timing_enabled(ping))
+	if (st->received)
 	{
 		total = (double)(st->received + st->dups);
 		avg = st->tsum / total;

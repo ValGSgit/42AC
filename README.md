@@ -27,21 +27,32 @@ I'll add more rows here as I finish projects.
 │   └── ASM/
 ├── libasm/
 │   ├── README.md
-│   └── docs/
+│   ├── Makefile           <- mandatory part; `make bonus` builds libasm_bonus/
+│   ├── docs/
+│   └── libasm_bonus/      <- the full library with the bonus, builds on its own
+│       └── Makefile
 └── ft_ping/
     ├── README.md
-    ├── Makefile
+    ├── Makefile           <- mandatory part; `make bonus` builds ft_ping_bonus/
     ├── includes/
     ├── srcs/
-    └── tests/
+    ├── tests/
+    └── ft_ping_bonus/     <- the full program with the bonus, builds on its own
+        ├── Makefile
+        ├── includes/
+        ├── srcs/
+        └── tests/
 ```
 
 Every project folder stands on its own. You can `cd` into one and follow its README without reading anything else here.
 
+When a project has a bonus, the bonus lives in its own `<project>_bonus/` folder inside the project folder. The mandatory folder only has mandatory code (no `#ifdef BONUS`, no bonus options), and the bonus folder is a complete copy with the bonus added, so each one builds and can be evaluated alone. The project's Makefile builds the mandatory part with `make` and the bonus folder with `make bonus`.
+
 ## Conventions
 
 - **One folder per project**, named after the subject (`Dr_Quine`, `libasm`, ...).
-- **Every project builds with its own Makefile(s)** and the usual rules (`all`, `clean`, `fclean`, `re`).
+- **Every project builds with its own Makefile(s)** and the usual rules (`all`, `clean`, `fclean`, `re`, plus `bonus` when there is one).
+- **Bonus in `<project>_bonus/`**, with `_bonus` in the file names (`main_bonus.c`, `ft_ping_bonus.h`, ...).
 - **Targets Linux x86-64** unless the subject says otherwise. On Windows I use WSL.
 - **LF line endings everywhere.** `.gitattributes` enforces this. Some projects (the quines especially) compare files byte-for-byte, and a Windows checkout with CRLF breaks them silently. If you cloned the repo before `.gitattributes` existed, run `git add --renormalize .` or just re-clone.
 

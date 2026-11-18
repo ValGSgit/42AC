@@ -111,47 +111,28 @@ static void	dump_orig_icmp(struct ip *ip)
 	printf("\n");
 }
 
-/* Is the packet quoted inside the error one of our echo requests? */
-static int	is_ours(t_ping *ping, struct ip *orig)
-{
-	struct icmp	*orig_icmp;
-
-	if (orig->ip_p != IPPROTO_ICMP)
-		return (0);
-	orig_icmp = (struct icmp *)((unsigned char *)orig + (orig->ip_hl << 2));
-	return (orig_icmp->icmp_type == ICMP_ECHO
-		&& ntohs(orig_icmp->icmp_id) == ping->id);
-}
-
 /*
  * len is the full datagram length (outer IP header included).
  * Without -v we only report errors about packets sent to our target, like
  * inetutils does. With -v everything is shown, even errors caused by other
  * programs' traffic.
- *
- * Returns 1 if the error was about one of our packets (the caller counts it
- * as a response), 0 otherwise.
  */
-int	print_icmp_error(t_ping *ping, struct ip *ip, struct icmp *icmp,
+void	print_icmp_error(t_ping *ping, struct ip *ip, struct icmp *icmp,
 		size_t len, struct in_addr from)
 {
 	size_t		hlen;
 	struct ip	*orig;
 	const char	*text;
-	int		ours;
 
 	hlen = (size_t)ip->ip_hl << 2;
 	if (len < hlen + ICMP_MINLEN + sizeof(struct ip))
-		return (0);
+		return ;
 	orig = &icmp->icmp_ip;
 	if (len < hlen + ICMP_MINLEN + ((size_t)orig->ip_hl << 2) + 8)
-		return (0);
-	ours = is_ours(ping, orig);
+		return ;
 	if (!(ping->opts.flags & OPT_VERBOSE)
 		&& orig->ip_dst.s_addr != ping->dest.sin_addr.s_addr)
-		return (ours);
-	if (ping->opts.flags & OPT_FLOOD)
-		putchar('\n');
+		return ;
 	printf("%zu bytes from %s: ", len - hlen, inet_ntoa(from));
 	text = describe(icmp->icmp_type, icmp->icmp_code);
 	if (text)
@@ -164,5 +145,4 @@ int	print_icmp_error(t_ping *ping, struct ip *ip, struct icmp *icmp,
 		dump_orig_ip(orig);
 		dump_orig_icmp(orig);
 	}
-	return (ours);
 }

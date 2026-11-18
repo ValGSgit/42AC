@@ -33,25 +33,16 @@ static void	handle_echo_reply(t_ping *ping, struct ip *ip, struct icmp *icmp,
 	else
 		ping->stats.received++;
 	rtt = 0;
-	if (timing_enabled(ping) && icmp_len >= ICMP_MINLEN + sizeof(sent_at))
+	if (icmp_len >= ICMP_MINLEN + sizeof(sent_at))
 	{
 		gettimeofday(&now, NULL);
 		memcpy(&sent_at, (unsigned char *)icmp + ICMP_MINLEN, sizeof(sent_at));
 		rtt = tv_diff_ms(&now, &sent_at);
 		record_rtt(&ping->stats, rtt);
 	}
-	if (ping->opts.flags & OPT_QUIET)
-		return ;
-	if (ping->opts.flags & OPT_FLOOD)
-	{
-		putchar('\b');
-		fflush(stdout);
-		return ;
-	}
 	printf("%zu bytes from %s: icmp_seq=%u ttl=%d", icmp_len,
 		inet_ntoa(from), seq, ip->ip_ttl);
-	if (timing_enabled(ping))
-		printf(" time=%.3f ms", rtt);
+	printf(" time=%.3f ms", rtt);
 	if (dup)
 		printf(" (DUP!)");
 	printf("\n");
@@ -68,13 +59,8 @@ static int	is_error_type(int type)
  * Reads one datagram from the socket. A raw ICMP socket gets *every* ICMP
  * packet that reaches the host (other pings, our own requests on loopback,
  * ...), so most of the work here is throwing away what isn't ours.
- *
- * Returns 0 if the packet counts as a response, -1 if it was ignored.
- * Like inetutils, an error reply (unreachable, TTL exceeded, ...) about one
- * of our requests counts as a response too: "-c 3" against an unreachable
- * host stops after 3 errors instead of waiting for the linger timeout.
  */
-int	receive_packet(t_ping *ping)
+void	receive_packet(t_ping *ping)
 {
 	static unsigned char	buf[RECV_BUFSIZE];
 	struct sockaddr_in	from;
@@ -91,7 +77,7 @@ int	receive_packet(t_ping *ping)
 	{
 		if (errno != EINTR && errno != EAGAIN)
 			error_msg("receiving packet: %s", strerror(errno));
-		return (-1);
+		return ;
 	}
 	ip = (struct ip *)buf;
 	hlen = (size_t)ip->ip_hl << 2;
@@ -100,20 +86,17 @@ int	receive_packet(t_ping *ping)
 		if (ping->opts.flags & OPT_VERBOSE)
 			fprintf(stderr, "packet too short (%zd bytes) from %s\n",
 				n, inet_ntoa(from.sin_addr));
-		return (-1);
+		return ;
 	}
 	icmp = (struct icmp *)(buf + hlen);
 	if (checksum(icmp, (size_t)n - hlen) != 0)
 		printf("checksum mismatch from %s\n", inet_ntoa(from.sin_addr));
 	if (icmp->icmp_type == ICMP_ECHOREPLY)
 	{
-		if (ntohs(icmp->icmp_id) != ping->id)
-			return (-1);
-		handle_echo_reply(ping, ip, icmp, (size_t)n - hlen, from.sin_addr);
-		return (0);
+		if (ntohs(icmp->icmp_id) == ping->id)
+			handle_echo_reply(ping, ip, icmp, (size_t)n - hlen,
+				from.sin_addr);
 	}
-	if (is_error_type(icmp->icmp_type)
-		&& print_icmp_error(ping, ip, icmp, (size_t)n, from.sin_addr))
-		return (0);
-	return (-1);
+	else if (is_error_type(icmp->icmp_type))
+		print_icmp_error(ping, ip, icmp, (size_t)n, from.sin_addr);
 }
